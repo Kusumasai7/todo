@@ -1,0 +1,1155 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Date It - Enhanced</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a6fd8;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #e9ecef;
+            --shadow-light: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 20px rgba(0,0,0,0.15);
+            --shadow-heavy: 0 8px 30px rgba(0,0,0,0.2);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --light-color: #2d3748;
+            --dark-color: #f7fafc;
+            --border-color: #4a5568;
+            --primary-color: #81e6d9;
+            --bg-gradient: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+            min-height: 100vh;
+            padding: 15px;
+            color: var(--dark-color);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 10px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #fff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50px;
+            padding: 10px 15px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .todo-app {
+            background: var(--light-color);
+            border-radius: 25px;
+            box-shadow: var(--shadow-heavy);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .todo-header {
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.9);
+            transition: var(--transition);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto auto;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .todo-input, .due-date-input, .category-input {
+            padding: 15px 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            transition: var(--transition);
+        }
+
+        .todo-input:focus, .due-date-input:focus, .category-input:focus {
+            outline: none;
+            border-color: rgba(255,255,255,0.8);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+        }
+
+        .priority-select {
+            padding: 15px 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-secondary {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #138496;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .filter-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .filter-btn.active {
+            background: white;
+            color: var(--primary-color);
+            border-color: white;
+            transform: scale(1.05);
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+        }
+
+        .progress-text {
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            position: absolute;
+            white-space: nowrap;
+        }
+
+        .completion-stats {
+            text-align: center;
+            margin-bottom: 15px;
+            color: white;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .todo-content {
+            padding: 30px;
+            background: var(--light-color);
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .sort-btn {
+            padding: 8px 16px;
+            background: var(--border-color);
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .sort-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .todo-item {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            transition: var(--transition);
+            position: relative;
+            cursor: grab;
+            animation: slideIn 0.3s ease;
+        }
+
+        .todo-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        .todo-item.completed {
+            background: #f8f9fa;
+            border-color: var(--success-color);
+            opacity: 0.8;
+        }
+
+        .todo-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .priority-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+        }
+
+        .priority-high { background: var(--danger-color); }
+        .priority-medium { background: var(--warning-color); }
+        .priority-low { background: var(--info-color); }
+
+        .todo-content-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-left: 10px;
+        }
+
+        .todo-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+            line-height: 1.5;
+            word-break: break-word;
+            font-weight: 500;
+        }
+
+        .todo-text.completed {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        .todo-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+            margin-left: 35px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            background: var(--border-color);
+            border-radius: 15px;
+        }
+
+        .category-tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .due-soon {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .overdue {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            margin-left: 35px;
+        }
+
+        .edit-form {
+            display: none;
+            gap: 10px;
+            margin-top: 15px;
+            margin-left: 35px;
+        }
+
+        .edit-form.active {
+            display: flex;
+        }
+
+        .edit-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .edit-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Snackbar Styles */
+        .snackbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 16px 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-heavy);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            max-width: 400px;
+            min-width: 300px;
+            text-align: center;
+        }
+
+        .snackbar.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .snackbar.success { background: var(--success-color); }
+        .snackbar.error { background: var(--danger-color); }
+        .snackbar.warning { background: var(--warning-color); }
+        .snackbar.info { background: var(--info-color); }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .todo-header, .todo-content {
+                padding: 20px;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .filter-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .todo-actions {
+                flex-direction: column;
+                margin-left: 0;
+            }
+
+            .edit-form {
+                flex-direction: column;
+                margin-left: 0;
+            }
+
+            .sort-controls {
+                justify-content: center;
+            }
+
+            .theme-toggle {
+                position: relative;
+                margin-top: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filter-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .todo-content-wrapper {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .todo-meta {
+                margin-left: 0;
+            }
+
+            .todo-actions {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+            <h1>Todo Date It</h1>
+            <p>Advanced task management with smart features</p>
+        </div>
+
+        <div class="todo-app">
+            <div class="todo-header">
+                <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search tasks...">
+                
+                <div class="input-group">
+                    <input type="text" id="todoInput" class="todo-input" placeholder="Add a new task...">
+                    <input type="date" id="dueDateInput" class="due-date-input">
+                    <input type="text" id="categoryInput" class="category-input" placeholder="Category">
+                    <select id="prioritySelect" class="priority-select">
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="low">Low</option>
+                    </select>
+                    <button id="addBtn" class="btn btn-primary">➕ Add</button>
+                </div>
+                
+                <div class="filter-stats">
+                    <button class="filter-btn active" data-filter="all">All (<span id="allCount">0</span>)</button>
+                    <button class="filter-btn" data-filter="active">Active (<span id="activeCount">0</span>)</button>
+                    <button class="filter-btn" data-filter="completed">Done (<span id="completedCount">0</span>)</button>
+                    <button class="filter-btn" data-filter="overdue">Overdue (<span id="overdueCount">0</span>)</button>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">
+                        <span class="progress-text" id="progressText">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="todo-content">
+                <div class="sort-controls">
+                    <button class="sort-btn active" data-sort="created">📅 Date Created</button>
+                    <button class="sort-btn" data-sort="priority">⚡ Priority</button>
+                    <button class="sort-btn" data-sort="due">⏰ Due Date</button>
+                    <button class="sort-btn" data-sort="alphabetical">🔤 A-Z</button>
+                    <button class="sort-btn" data-sort="category">🏷️ Category</button>
+                </div>
+
+                <div id="emptyState" class="empty-state">
+                    <h3>🎯 Ready to get organized?</h3>
+                    <p>Create your first task above and start being productive!</p>
+                </div>
+                <div id="todoList" class="todo-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="snackbar" class="snackbar"></div>
+
+    <script>
+        class TodoApp {
+            constructor() {
+                this.todos = this.loadTodos();
+                this.currentFilter = 'all';
+                this.currentSort = 'created';
+                this.editingId = null;
+                this.searchTerm = '';
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.render();
+                this.showSnackbar('Welcome back! 👋', 'info');
+            }
+
+            initializeElements() {
+                this.todoInput = document.getElementById('todoInput');
+                this.dueDateInput = document.getElementById('dueDateInput');
+                this.categoryInput = document.getElementById('categoryInput');
+                this.prioritySelect = document.getElementById('prioritySelect');
+                this.searchInput = document.getElementById('searchInput');
+                this.addBtn = document.getElementById('addBtn');
+                this.todoList = document.getElementById('todoList');
+                this.emptyState = document.getElementById('emptyState');
+                this.progressFill = document.getElementById('progressFill');
+                this.progressText = document.getElementById('progressText');
+                this.filterBtns = document.querySelectorAll('.filter-btn');
+                this.sortBtns = document.querySelectorAll('.sort-btn');
+                this.counts = {
+                    all: document.getElementById('allCount'),
+                    active: document.getElementById('activeCount'),
+                    completed: document.getElementById('completedCount'),
+                    overdue: document.getElementById('overdueCount')
+                };
+            }
+
+            bindEvents() {
+                this.addBtn.addEventListener('click', () => this.addTodo());
+                this.todoInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.addTodo();
+                });
+
+                this.searchInput.addEventListener('input', (e) => {
+                    this.searchTerm = e.target.value.toLowerCase();
+                    this.render();
+                });
+
+                this.filterBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.setFilter(e.target.dataset.filter);
+                    });
+                });
+
+                this.sortBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.setSort(e.target.dataset.sort);
+                    });
+                });
+
+                // Auto-save on input
+                [this.todoInput, this.categoryInput].forEach(input => {
+                    input.addEventListener('input', () => {
+                        this.updateAddButtonState();
+                    });
+                });
+            }
+
+            updateAddButtonState() {
+                const hasText = this.todoInput.value.trim().length > 0;
+                this.addBtn.disabled = !hasText;
+                this.addBtn.textContent = hasText ? '➕ Add Task' : '➕ Add';
+            }
+
+            addTodo() {
+                const text = this.todoInput.value.trim();
+                if (!text) {
+                    this.showSnackbar('Please enter a task! 📝', 'warning');
+                    return;
+                }
+
+                const todo = {
+                    id: Date.now().toString(),
+                    text: text,
+                    completed: false,
+                    createdAt: new Date().toISOString(),
+                    completedAt: null,
+                    dueDate: this.dueDateInput.value || null,
+                    category: this.categoryInput.value.trim() || 'General',
+                    priority: this.prioritySelect.value
+                };
+
+                this.todos.unshift(todo);
+                this.clearForm();
+                this.saveTodos();
+                this.render();
+                this.showSnackbar(`Task "${text}" added successfully! ✅`, 'success');
+            }
+
+            clearForm() {
+                this.todoInput.value = '';
+                this.dueDateInput.value = '';
+                this.categoryInput.value = '';
+                this.prioritySelect.value = 'medium';
+                this.updateAddButtonState();
+            }
+
+            toggleTodo(id) {
+                const todo = this.todos.find(t => t.id === id);
+                if (todo) {
+                    todo.completed = !todo.completed;
+                    todo.completedAt = todo.completed ? new Date().toISOString() : null;
+                    this.saveTodos();
+                    this.render();
+                    
+                    const message = todo.completed 
+                        ? `Task completed! Great job! 🎉` 
+                        : `Task marked as active 🔄`;
+                    this.showSnackbar(message, todo.completed ? 'success' : 'info');
+                }
+            }
+
+            deleteTodo(id) {
+                const todo = this.todos.find(t => t.id === id);
+                if (todo) {
+                    this.todos = this.todos.filter(t => t.id !== id);
+                    this.saveTodos();
+                    this.render();
+                    this.showSnackbar(`Task "${todo.text}" deleted 🗑️`, 'error');
+                }
+            }
+
+            editTodo(id) {
+                this.editingId = id;
+                this.render();
+                // Focus on edit input
+                setTimeout(() => {
+                    const editInput = document.getElementById(`editInput${id}`);
+                    if (editInput) {
+                        editInput.focus();
+                        editInput.select();
+                    }
+                }, 100);
+            }
+
+            updateTodo(id, newText) {
+                const todo = this.todos.find(t => t.id === id);
+                if (todo && newText.trim()) {
+                    const oldText = todo.text;
+                    todo.text = newText.trim();
+                    this.editingId = null;
+                    this.saveTodos();
+                    this.render();
+                    this.showSnackbar(`Task updated! ✏️`, 'success');
+                }
+            }
+
+            cancelEdit() {
+                this.editingId = null;
+                this.render();
+            }
+
+            setFilter(filter) {
+                this.currentFilter = filter;
+                this.filterBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.filter === filter);
+                });
+                this.render();
+                
+                const filterNames = {
+                    all: 'All tasks',
+                    active: 'Active tasks', 
+                    completed: 'Completed tasks',
+                    overdue: 'Overdue tasks'
+                };
+                this.showSnackbar(`Showing ${filterNames[filter]} 📋`, 'info');
+            }
+
+            setSort(sort) {
+                this.currentSort = sort;
+                this.sortBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.sort === sort);
+                });
+                this.render();
+                
+                const sortNames = {
+                    created: 'Date created',
+                    priority: 'Priority',
+                    due: 'Due date',
+                    alphabetical: 'Alphabetical',
+                    category: 'Category'
+                };
+                this.showSnackbar(`Sorted by ${sortNames[sort]} 🔄`, 'info');
+            }
+
+            getFilteredTodos() {
+                let filtered = this.todos;
+
+                // Apply search filter
+                if (this.searchTerm) {
+                    filtered = filtered.filter(todo => 
+                        todo.text.toLowerCase().includes(this.searchTerm) ||
+                        todo.category.toLowerCase().includes(this.searchTerm)
+                    );
+                }
+
+                // Apply status filter
+                switch (this.currentFilter) {
+                    case 'active':
+                        filtered = filtered.filter(t => !t.completed);
+                        break;
+                    case 'completed':
+                        filtered = filtered.filter(t => t.completed);
+                        break;
+                    case 'overdue':
+                        filtered = filtered.filter(t => 
+                            !t.completed && t.dueDate && new Date(t.dueDate) < new Date()
+                        );
+                        break;
+                }
+
+                // Apply sorting
+                return this.sortTodos(filtered);
+            }
+
+            sortTodos(todos) {
+                return todos.sort((a, b) => {
+                    switch (this.currentSort) {
+                        case 'priority':
+                            const priorityOrder = { high: 3, medium: 2, low: 1 };
+                            return priorityOrder[b.priority] - priorityOrder[a.priority];
+                        
+                        case 'due':
+                            if (!a.dueDate && !b.dueDate) return 0;
+                            if (!a.dueDate) return 1;
+                            if (!b.dueDate) return -1;
+                            return new Date(a.dueDate) - new Date(b.dueDate);
+                        
+                        case 'alphabetical':
+                            return a.text.localeCompare(b.text);
+                        
+                        case 'category':
+                            return a.category.localeCompare(b.category);
+                        
+                        case 'created':
+                        default:
+                            return new Date(b.createdAt) - new Date(a.createdAt);
+                    }
+                });
+            }
+
+            isOverdue(todo) {
+                return todo.dueDate && !todo.completed && new Date(todo.dueDate) < new Date();
+            }
+
+            isDueSoon(todo) {
+                if (!todo.dueDate || todo.completed) return false;
+                const dueDate = new Date(todo.dueDate);
+                const today = new Date();
+                const diffTime = dueDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays <= 2 && diffDays >= 0;
+            }
+
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            formatDueDate(dateString) {
+                const date = new Date(dateString);
+                const today = new Date();
+                const diffTime = date - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`;
+                if (diffDays === 0) return 'Due today';
+                if (diffDays === 1) return 'Due tomorrow';
+                return `Due in ${diffDays} days`;
+            }
+
+            updateCounts() {
+                const all = this.todos.length;
+                const active = this.todos.filter(t => !t.completed).length;
+                const completed = this.todos.filter(t => t.completed).length;
+                const overdue = this.todos.filter(t => this.isOverdue(t)).length;
+
+                this.counts.all.textContent = all;
+                this.counts.active.textContent = active;
+                this.counts.completed.textContent = completed;
+                this.counts.overdue.textContent = overdue;
+
+                // Update progress bar with percentage
+                const progress = all > 0 ? (completed / all) * 100 : 0;
+                this.progressFill.style.width = `${progress}%`;
+                
+                // Update progress text
+                this.progressText.textContent = `${Math.round(progress)}%`;
+                
+                // Add completion stats text
+                let completionStatsElement = document.getElementById('completionStats');
+                if (!completionStatsElement) {
+                    completionStatsElement = document.createElement('div');
+                    completionStatsElement.id = 'completionStats';
+                    completionStatsElement.className = 'completion-stats';
+                    this.progressFill.parentNode.parentNode.insertBefore(completionStatsElement, this.progressFill.parentNode);
+                }
+                
+                if (all > 0) {
+                    completionStatsElement.textContent = `${completed} of ${all} tasks completed (${Math.round(progress)}%)`;
+                } else {
+                    completionStatsElement.textContent = 'No tasks yet - start by adding your first task!';
+                }
+            }
+
+            render() {
+                this.updateCounts();
+                
+                const filteredTodos = this.getFilteredTodos();
+                
+                if (filteredTodos.length === 0) {
+                    this.emptyState.style.display = 'block';
+                    this.todoList.style.display = 'none';
+                    
+                    if (this.searchTerm) {
+                        this.emptyState.innerHTML = '<h3>🔍 No tasks found</h3><p>Try adjusting your search terms.</p>';
+                    } else if (this.currentFilter === 'active') {
+                        this.emptyState.innerHTML = '<h3>🎉 All caught up!</h3><p>No active tasks remaining.</p>';
+                    } else if (this.currentFilter === 'completed') {
+                        this.emptyState.innerHTML = '<h3>📋 No completed tasks</h3><p>Complete some tasks to see them here.</p>';
+                    } else if (this.currentFilter === 'overdue') {
+                        this.emptyState.innerHTML = '<h3>✅ No overdue tasks!</h3><p>Great job staying on top of things!</p>';
+                    } else {
+                        this.emptyState.innerHTML = '<h3>🎯 Ready to get organized?</h3><p>Create your first task above!</p>';
+                    }
+                } else {
+                    this.emptyState.style.display = 'none';
+                    this.todoList.style.display = 'flex';
+                    
+                    this.todoList.innerHTML = filteredTodos.map(todo => this.renderTodoItem(todo)).join('');
+                    this.bindTodoEvents();
+                }
+            }
+
+            renderTodoItem(todo) {
+                const isEditing = this.editingId === todo.id;
+                const isOverdue = this.isOverdue(todo);
+                const isDueSoon = this.isDueSoon(todo);
+                
+                return `
+                    <div class="todo-item ${todo.completed ? 'completed' : ''}" draggable="true" data-id="${todo.id}">
+                        <div class="priority-indicator priority-${todo.priority}"></div>
+                        
+                        <div class="todo-content-wrapper">
+                            <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} data-id="${todo.id}">
+                            <div class="todo-text ${todo.completed ? 'completed' : ''}">${todo.text}</div>
+                        </div>
+                        
+                        <div class="todo-meta">
+                            <div class="meta-item">
+                                📅 ${this.formatDate(todo.createdAt)}
+                            </div>
+                            ${todo.completedAt ? `
+                                <div class="meta-item">
+                                    ✅ ${this.formatDate(todo.completedAt)}
+                                </div>
+                            ` : ''}
+                            ${todo.dueDate ? `
+                                <div class="meta-item ${isOverdue ? 'overdue' : isDueSoon ? 'due-soon' : ''}">
+                                    ⏰ ${this.formatDueDate(todo.dueDate)}
+                                </div>
+                            ` : ''}
+                            <div class="category-tag">🏷️ ${todo.category}</div>
+                            <div class="meta-item">
+                                ${{high: '🔴', medium: '🟡', low: '🟢'}[todo.priority]} ${todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+                            </div>
+                        </div>
+
+                        <div class="todo-actions">
+                            <button class="btn btn-secondary" onclick="todoApp.editTodo('${todo.id}')">✏️ Edit</button>
+                            <button class="btn btn-danger" onclick="todoApp.deleteTodo('${todo.id}')">🗑️ Delete</button>
+                        </div>
+
+                        <div class="edit-form ${isEditing ? 'active' : ''}" id="editForm${todo.id}">
+                            <input type="text" class="edit-input" value="${todo.text}" id="editInput${todo.id}">
+                            <button class="btn btn-success" onclick="todoApp.updateTodo('${todo.id}', document.getElementById('editInput${todo.id}').value)">💾 Save</button>
+                            <button class="btn btn-secondary" onclick="todoApp.cancelEdit()">❌ Cancel</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            bindTodoEvents() {
+                const checkboxes = document.querySelectorAll('.todo-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => {
+                        this.toggleTodo(e.target.dataset.id);
+                    });
+                });
+
+                const editInputs = document.querySelectorAll('.edit-input');
+                editInputs.forEach(input => {
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            const id = input.id.replace('editInput', '');
+                            this.updateTodo(id, input.value);
+                        }
+                        if (e.key === 'Escape') {
+                            this.cancelEdit();
+                        }
+                    });
+                });
+
+                // Drag and drop functionality
+                const todoItems = document.querySelectorAll('.todo-item');
+                todoItems.forEach(item => {
+                    item.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', e.target.dataset.id);
+                        e.target.classList.add('dragging');
+                    });
+
+                    item.addEventListener('dragend', (e) => {
+                        e.target.classList.remove('dragging');
+                    });
+
+                    item.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                    });
+
+                    item.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const draggedId = e.dataTransfer.getData('text/plain');
+                        const targetId = e.target.closest('.todo-item').dataset.id;
+                        
+                        if (draggedId !== targetId) {
+                            this.reorderTodos(draggedId, targetId);
+                        }
+                    });
+                });
+            }
+
+            reorderTodos(draggedId, targetId) {
+                const draggedIndex = this.todos.findIndex(t => t.id === draggedId);
+                const targetIndex = this.todos.findIndex(t => t.id === targetId);
+                
+                if (draggedIndex !== -1 && targetIndex !== -1) {
+                    const [draggedTodo] = this.todos.splice(draggedIndex, 1);
+                    this.todos.splice(targetIndex, 0, draggedTodo);
+                    this.saveTodos();
+                    this.render();
+                    this.showSnackbar('Tasks reordered! 🔄', 'info');
+                }
+            }
+
+            showSnackbar(message, type = 'info') {
+                const snackbar = document.getElementById('snackbar');
+                snackbar.textContent = message;
+                snackbar.className = `snackbar ${type}`;
+                snackbar.classList.add('show');
+                
+                setTimeout(() => {
+                    snackbar.classList.remove('show');
+                }, 3000);
+            }
+
+            loadTodos() {
+                const saved = localStorage.getItem('todos-enhanced');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            saveTodos() {
+                localStorage.setItem('todos-enhanced', JSON.stringify(this.todos));
+            }
+        }
+
+        // Theme toggle functionality
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeBtn = document.querySelector('.theme-toggle');
+            themeBtn.textContent = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+            
+            todoApp.showSnackbar(`Switched to ${newTheme} mode! ${newTheme === 'dark' ? '🌙' : '☀️'}`, 'info');
+        }
+
+        // Initialize theme
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            const themeBtn = document.querySelector('.theme-toggle');
+            themeBtn.textContent = savedTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            window.todoApp = new TodoApp();
+        });
+    </script>
+</body>
+</html>
